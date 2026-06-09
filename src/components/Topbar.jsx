@@ -1,14 +1,31 @@
-import { Moon, Plus, Search, SunMedium } from "lucide-react";
+import { Menu, Moon, Plus, Search, SunMedium } from "lucide-react";
 import { Link } from "react-router-dom";
 
-function Topbar({ pageTitle, searchTerm, onSearchChange, theme, onThemeToggle }) {
+function Topbar({
+  pageTitle,
+  searchTerm,
+  onSearchChange,
+  theme,
+  onThemeToggle,
+  onMenuToggle,
+}) {
   const isDark = theme === "dark";
 
   return (
     <header className="topbar">
-      <div>
-        <p className="eyebrow">Blog management</p>
-        <h2>{pageTitle}</h2>
+      <div className="topbar-title-group">
+        <button
+          type="button"
+          className="icon-button menu-button"
+          onClick={onMenuToggle}
+          aria-label="Open sidebar menu"
+        >
+          <Menu size={18} />
+        </button>
+        <div className="topbar-heading">
+          <p className="eyebrow">Blog management</p>
+          <h2>{pageTitle}</h2>
+        </div>
       </div>
 
       <div className="topbar-actions">

@@ -4,6 +4,7 @@ const createFormState = (initialData) => ({
   title: initialData?.title ?? "",
   author: initialData?.author ?? "",
   tags: Array.isArray(initialData?.tags) ? initialData.tags.join(", ") : "",
+  imageUrl: initialData?.imageUrl ?? "",
   content: initialData?.content ?? "",
 });
 
@@ -65,6 +66,7 @@ function PostForm({
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
+      imageUrl: formData.imageUrl.trim(),
       content: formData.content.trim(),
     });
   };
@@ -116,6 +118,21 @@ function PostForm({
             placeholder="SEO, Writing, Product"
           />
           <span className="field-hint">Separate tags with commas.</span>
+        </div>
+
+        <div className="form-field form-field-full">
+          <label htmlFor="imageUrl">Featured Image URL</label>
+          <input
+            id="imageUrl"
+            name="imageUrl"
+            type="url"
+            value={formData.imageUrl}
+            onChange={handleChange}
+            placeholder="https://example.com/featured-image.jpg"
+          />
+          <span className="field-hint">
+            Optional. Paste a public image URL to show a featured image.
+          </span>
         </div>
 
         <div className="form-field form-field-full">

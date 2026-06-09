@@ -13,6 +13,10 @@ const createPreview = (content = "") =>
 function PostCard({ post, onDelete }) {
   return (
     <article className="post-card">
+      {post.imageUrl ? (
+        <img className="post-card-image" src={post.imageUrl} alt={post.title} />
+      ) : null}
+
       <div className="post-card-header">
         <div>
           <h4>{post.title}</h4>
