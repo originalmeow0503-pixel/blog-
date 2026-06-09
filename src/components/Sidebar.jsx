@@ -29,6 +29,7 @@ function Sidebar({
 }) {
   const isCompact = isCollapsed && !isMobileView;
   const ToggleIcon = isMobileView ? X : isCompact ? PanelLeftOpen : PanelLeftClose;
+  const showHeaderToggle = !isCompact || isMobileView;
 
   return (
     <aside
@@ -38,21 +39,34 @@ function Sidebar({
     >
       <div className="sidebar-header">
         <div className="brand-block">
-          <div className="brand-badge">BD</div>
+          {isCompact ? (
+            <button
+              type="button"
+              className="brand-badge brand-badge-button"
+              aria-label="Expand sidebar"
+              onClick={onToggleCollapse}
+            >
+              BD
+            </button>
+          ) : (
+            <div className="brand-badge">BD</div>
+          )}
           <div className="brand-details">
             <h1>BlogDesk</h1>
             <p>Content control panel</p>
           </div>
         </div>
 
-        <button
-          type="button"
-          className="sidebar-toggle"
-          aria-label={isMobileView ? "Close sidebar" : "Toggle sidebar"}
-          onClick={isMobileView ? onCloseMobile : onToggleCollapse}
-        >
-          <ToggleIcon size={18} />
-        </button>
+        {showHeaderToggle ? (
+          <button
+            type="button"
+            className="sidebar-toggle"
+            aria-label={isMobileView ? "Close sidebar" : "Toggle sidebar"}
+            onClick={isMobileView ? onCloseMobile : onToggleCollapse}
+          >
+            <ToggleIcon size={18} />
+          </button>
+        ) : null}
       </div>
 
       <nav className="sidebar-nav">

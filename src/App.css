@@ -136,6 +136,18 @@ a {
   flex-shrink: 0;
 }
 
+.brand-badge-button {
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.brand-badge-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
 .sidebar-toggle {
   width: 40px;
   height: 40px;
@@ -189,6 +201,7 @@ a {
 }
 
 .sidebar-compact .sidebar-header {
+  align-items: center;
   justify-content: center;
 }
 
@@ -196,6 +209,11 @@ a {
 .sidebar-compact .sidebar-link-label,
 .sidebar-compact .sidebar-footer {
   display: none;
+}
+
+.sidebar-compact .brand-block {
+  justify-content: center;
+  width: 100%;
 }
 
 .sidebar-compact .sidebar-nav {
@@ -209,9 +227,7 @@ a {
 }
 
 .sidebar-compact .sidebar-toggle {
-  position: absolute;
-  top: 24px;
-  right: 18px;
+  position: static;
 }
 
 .main-area {
