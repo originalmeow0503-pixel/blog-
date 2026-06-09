@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BlogDesk</title>
+    <script>
+      (function handleGitHubPagesRedirect(location) {
+        if (!location.search.startsWith("?/")) {
+          return;
+        }
+
+        const decodedPath = location.search
+          .slice(1)
+          .split("&")
+          .map((segment) => segment.replace(/~and~/g, "&"))
+          .join("?");
+
+        const cleanPathname = location.pathname.replace(/\/$/, "");
+        const nextUrl = `${cleanPathname}${decodedPath}${location.hash}`;
+
+        window.history.replaceState(null, "", nextUrl);
+      })(window.location);
+    </script>
     <script type="module" crossorigin src="/blog-/assets/index-CS-cKCvq.js"></script>
     <link rel="stylesheet" crossorigin href="/blog-/assets/index-DuzimaZ9.css">
   </head>
