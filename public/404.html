@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlogDesk</title>
+    <script>
+      (function redirectGitHubPagesRoute(location) {
+        const repoBase = "/blog-";
+        const routePath = location.pathname.startsWith(repoBase)
+          ? location.pathname.slice(repoBase.length)
+          : location.pathname;
+        const normalizedPath = routePath.replace(/^\/+/, "");
+        const query = location.search || "";
+        const routeTarget = normalizedPath ? `#/${normalizedPath}` : "#/";
+        const redirectUrl = `${location.origin}${repoBase}/${routeTarget}${query}${location.hash}`;
+
+        location.replace(redirectUrl);
+      })(window.location);
+    </script>
+  </head>
+  <body></body>
+</html>
