@@ -287,7 +287,9 @@ function DashboardHome({ posts, searchTerm }) {
               <p className="eyebrow">Recent activity</p>
               <h3>Latest post updates</h3>
             </div>
-            <span className="badge">{latestPosts.length} shown</span>
+            <Link to="/posts" className="badge badge-link">
+              {latestPosts.length} shown
+            </Link>
           </div>
 
           <div className="post-list">
