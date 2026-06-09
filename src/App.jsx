@@ -20,6 +20,14 @@ import { samplePosts } from "./data/samplePosts";
 const storageKey = "blogdesk_posts";
 const recentWindowInMs = 7 * 24 * 60 * 60 * 1000;
 
+const createPostId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return Date.now().toString();
+};
+
 const formatDate = (dateValue) =>
   new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -42,11 +50,11 @@ const normalizeTags = (tags) => {
   return [];
 };
 
-const normalizePost = (post, index = 0) => {
+const normalizePost = (post) => {
   const fallbackDate = new Date().toISOString();
 
   return {
-    id: post.id ?? Date.now() + index,
+    id: post.id ? String(post.id) : createPostId(),
     title: post.title ?? "Untitled Post",
     author: post.author ?? "Unknown Author",
     content: post.content ?? post.summary ?? "",
@@ -56,26 +64,82 @@ const normalizePost = (post, index = 0) => {
   };
 };
 
-const loadStoredPosts = () => {
+const savePostsToStorage = (posts) => {
   if (typeof window === "undefined") {
-    return samplePosts.map(normalizePost);
+    return;
+  }
+
+  window.localStorage.setItem(storageKey, JSON.stringify(posts));
+};
+
+const sanitizePosts = (rawPosts) => {
+  const usedIds = new Set();
+  let wasRepaired = false;
+
+  const posts = rawPosts.map((post) => {
+    const normalizedPost = normalizePost(post);
+    let nextId = normalizedPost.id;
+
+    if (!post?.id) {
+      wasRepaired = true;
+    }
+
+    while (usedIds.has(nextId)) {
+      nextId = createPostId();
+      wasRepaired = true;
+    }
+
+    if (nextId !== normalizedPost.id) {
+      wasRepaired = true;
+    }
+
+    usedIds.add(nextId);
+
+    return {
+      ...normalizedPost,
+      id: nextId,
+    };
+  });
+
+  return {
+    posts,
+    wasRepaired,
+  };
+};
+
+const getInitialPosts = () => {
+  const fallbackPosts = sanitizePosts(samplePosts).posts;
+
+  if (typeof window === "undefined") {
+    return fallbackPosts;
   }
 
   const savedPosts = window.localStorage.getItem(storageKey);
 
   if (savedPosts === null) {
-    return samplePosts.map(normalizePost);
+    savePostsToStorage(fallbackPosts);
+    return fallbackPosts;
   }
 
   try {
     const parsedPosts = JSON.parse(savedPosts);
 
-    return Array.isArray(parsedPosts)
-      ? parsedPosts.map(normalizePost)
-      : samplePosts.map(normalizePost);
+    if (!Array.isArray(parsedPosts)) {
+      savePostsToStorage(fallbackPosts);
+      return fallbackPosts;
+    }
+
+    const { posts, wasRepaired } = sanitizePosts(parsedPosts);
+
+    if (wasRepaired) {
+      savePostsToStorage(posts);
+    }
+
+    return posts;
   } catch (error) {
     console.error("Could not load saved BlogDesk posts.", error);
-    return samplePosts.map(normalizePost);
+    savePostsToStorage(fallbackPosts);
+    return fallbackPosts;
   }
 };
 
@@ -440,14 +504,8 @@ function DashboardLayout({ theme, onThemeToggle, searchTerm, onSearchChange }) {
 function App() {
   const [theme, setTheme] = useState("light");
   const [searchTerm, setSearchTerm] = useState("");
-  const [posts, setPosts] = useState(loadStoredPosts);
+  const [posts, setPosts] = useState(getInitialPosts);
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(storageKey, JSON.stringify(posts));
-    }
-  }, [posts]);
 
   useEffect(() => {
     if (!toast) {
@@ -472,23 +530,32 @@ function App() {
     setSearchTerm("");
   };
 
+  const setAndStorePosts = (updater) => {
+    setPosts((currentPosts) => {
+      const nextPosts =
+        typeof updater === "function" ? updater(currentPosts) : updater;
+
+      savePostsToStorage(nextPosts);
+      return nextPosts;
+    });
+  };
+
   const addPost = (newPost) => {
     const timestamp = new Date().toISOString();
-    const createdPost = normalizePost(
-      {
+    setAndStorePosts((currentPosts) => {
+      const createdPost = normalizePost({
         ...newPost,
-        id: newPost.id ?? Date.now(),
-        createdAt: newPost.createdAt ?? timestamp,
-        updatedAt: newPost.updatedAt ?? timestamp,
-      },
-      posts.length,
-    );
+        id: createPostId(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
 
-    setPosts((currentPosts) => [createdPost, ...currentPosts]);
+      return [createdPost, ...currentPosts];
+    });
   };
 
   const updatePost = (id, updatedPost) => {
-    setPosts((currentPosts) =>
+    setAndStorePosts((currentPosts) =>
       currentPosts.map((post) =>
         String(post.id) === String(id)
           ? normalizePost({
@@ -504,7 +571,7 @@ function App() {
   };
 
   const deletePost = (id) => {
-    setPosts((currentPosts) =>
+    setAndStorePosts((currentPosts) =>
       currentPosts.filter((post) => String(post.id) !== String(id)),
     );
   };
@@ -550,10 +617,7 @@ function App() {
               />
             }
           />
-          <Route
-            path="posts/:id"
-            element={<ViewPostPage posts={posts} />}
-          />
+          <Route path="posts/:id" element={<ViewPostPage posts={posts} />} />
           <Route
             path="posts/:id/edit"
             element={
